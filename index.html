@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BudgetLens</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:#0d1f0d;color:#e2e8f0;min-height:100vh;text-align:center}
+.c{max-width:800px;margin:0 auto;padding:2rem}
+h1{font-size:2.5rem;background:linear-gradient(135deg,#4caf50,#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:0.5rem}
+.sub{color:#94a3b8;margin-bottom:2rem}
+.palette{display:flex;height:200px;border-radius:16px;overflow:hidden;margin-bottom:1.5rem;border:2px solid #30363d}
+.color{flex:1;cursor:pointer;position:relative;transition:flex 0.3s}
+.color:hover{flex:1.5}
+.color span{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.6);padding:4px 8px;border-radius:6px;font-size:0.8rem;color:#fff;opacity:0;transition:opacity 0.2s}
+.color:hover span{opacity:1}
+.controls{display:flex;justify-content:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.btn{padding:12px 24px;background:#4caf50;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer}
+.btn:hover{opacity:0.8}
+.mode-btn{padding:8px 16px;background:#161b22;color:#e2e8f0;border:1px solid #30363d;border-radius:6px;cursor:pointer}
+.mode-btn.active{background:#4caf50;border-color:#4caf50}
+.saved{display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem}
+.saved-palette{display:flex;height:40px;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid #30363d;width:150px}
+.footer{margin-top:2rem;color:#475569;font-size:0.85rem}
+</style></head><body>
+<div class="c">
+<h1>BudgetLens</h1>
+<p class="sub">Click a color to copy its hex code. Generate new palettes with different moods.</p>
+<div class="controls">
+<button class="btn" onclick="generate()">Generate Palette</button>
+<button class="mode-btn active" onclick="setMode('vibrant')">Vibrant</button>
+<button class="mode-btn" onclick="setMode('pastel')">Pastel</button>
+<button class="mode-btn" onclick="setMode('dark')">Dark</button>
+</div>
+<div class="palette" id="palette"></div>
+<p style="color:#94a3b8;font-size:0.9rem">Click any color to copy • <span id="copied"></span></p>
+<h3 style="color:#4caf50;margin-top:2rem">Saved Palettes</h3>
+<div class="saved" id="saved"></div>
+<p class="footer">Built with MiMo AI · Powered by MiMo AI</p>
+</div>
+<script>
+let mode="vibrant",palettes=[];
+function setMode(m){mode=m;document.querySelectorAll(".mode-btn").forEach(b=>{b.classList.toggle("active",b.textContent.toLowerCase()===m);});generate();}
+function hsl(h,s,l){return "hsl("+h+","+s+"%,"+l+"%)"}
+function generate(){
+  const palette=document.getElementById("palette");palette.innerHTML="";
+  const colors=[];
+  for(let i=0;i<5;i++){
+    let h=Math.random()*360,s,l;
+    if(mode==="vibrant"){s=70+Math.random()*30;l=45+Math.random()*20;}
+    else if(mode==="pastel"){s=50+Math.random()*30;l=75+Math.random()*15;}
+    else{s=40+Math.random()*30;l=15+Math.random()*20;}
+    colors.push(hsl(Math.floor(h),Math.floor(s),Math.floor(l)));
+    const div=document.createElement("div");div.className="color";div.style.background=colors[i];
+    div.innerHTML="<span>"+colors[i]+"</span>";
+    div.onclick=()=>{navigator.clipboard.writeText(colors[i]);document.getElementById("copied").textContent="Copied "+colors[i]+"!";setTimeout(()=>document.getElementById("copied").textContent="",2000);};
+    palette.appendChild(div);
+  }
+  palettes.push(colors);renderSaved();
+}
+function renderSaved(){
+  const s=document.getElementById("saved");s.innerHTML="";
+  palettes.slice(-6).forEach(p=>{
+    const div=document.createElement("div");div.className="saved-palette";
+    p.forEach(c=>{const d=document.createElement("div");d.style.cssText="flex:1;background:"+c;s.appendChild(d);});
+    s.appendChild(div);
+  });
+  // fix: restructure
+  document.getElementById("saved").innerHTML="";
+  palettes.slice(-6).forEach(p=>{
+    const wrap=document.createElement("div");wrap.className="saved-palette";
+    p.forEach(c=>{const d=document.createElement("div");d.style.cssText="flex:1;background:"+c;wrap.appendChild(d);});
+    document.getElementById("saved").appendChild(wrap);
+  });
+}
+generate();
+</script></body></html>
